@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Angular for Seniors: Reactive Interactive Guide</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #0b0f19;
+      --card-bg: rgba(20, 27, 45, 0.7);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      
+      /* Accent Gradients */
+      --accent-primary: #8b5cf6; /* Violet */
+      --accent-secondary: #ec4899; /* Pink */
+      --accent-success: #10b981; /* Emerald */
+      --accent-warning: #f59e0b; /* Amber */
+      
+      --gradient-violet: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+      --gradient-pink: linear-gradient(135deg, #ec4899 0%, #be185d 100%);
+      --gradient-emerald: linear-gradient(135deg, #10b981 0%, #047857 100%);
+      --gradient-dark: linear-gradient(180deg, #111827 0%, #030712 100%);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(139, 92, 246, 0.15) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(236, 72, 153, 0.1) 0px, transparent 50%);
+      color: var(--text-main);
+      line-height: 1.6;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    /* Container & Layout */
+    .container {
+      display: flex;
+      max-width: 1400px;
+      margin: 0 auto;
+      min-height: 100vh;
+      position: relative;
+    }
+
+    /* Sidebar Navigation */
+    aside {
+      width: 320px;
+      border-right: 1px solid var(--card-border);
+      padding: 2.5rem 1.5rem;
+      background: rgba(17, 24, 39, 0.4);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      z-index: 10;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 1.25rem;
+      font-weight: 700;
+      background: linear-gradient(to right, #a78bfa, #f472b6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 3rem;
+    }
+
+    .brand svg {
+      width: 32px;
+      height: 32px;
+      fill: url(#brand-grad);
+    }
+
+    nav ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    nav a {
+      display: flex;
+      align-items: center;
+      padding: 0.85rem 1rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: 500;
+      font-size: 0.95rem;
+      transition: all 0.2s ease;
+      border: 1px solid transparent;
+    }
+
+    nav a:hover, nav li.active a {
+      color: var(--text-main);
+      background: rgba(255, 255, 255, 0.04);
+      border-color: rgba(255, 255, 255, 0.05);
+    }
+
+    nav li.active a {
+      background: rgba(139, 92, 246, 0.15);
+      border-color: rgba(139, 92, 246, 0.3);
+      color: #c084fc;
+    }
+
+    .sidebar-footer {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      border-top: 1px solid var(--card-border);
+      padding-top: 1.5rem;
+      text-align: center;
+    }
+
+    /* Main Content Area */
+    main {
+      flex: 1;
+      padding: 3rem 4rem;
+      overflow-y: auto;
+      max-width: calc(100% - 320px);
+    }
+
+    section {
+      display: none;
+      animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    section.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Typography */
+    h1 {
+      font-size: 2.75rem;
+      font-weight: 800;
+      margin-bottom: 1rem;
+      background: linear-gradient(135deg, #ffffff 0%, #a1a1aa 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+      font-size: 1.15rem;
+      color: var(--text-muted);
+      margin-bottom: 3rem;
+    }
+
+    h2 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin: 2.5rem 0 1.25rem;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    h3 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin: 1.5rem 0 0.75rem;
+      color: #e4e4e7;
+    }
+
+    p {
+      color: #d4d4d8;
+      margin-bottom: 1.5rem;
+      font-size: 1.05rem;
+      line-height: 1.7;
+    }
+
+    /* Grid & Cards */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.5rem;
+      margin: 2rem 0;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 1.75rem;
+      backdrop-filter: blur(8px);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: transparent;
+      transition: background 0.3s;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(139, 92, 246, 0.3);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    .card.accent-violet::before { background: var(--gradient-violet); }
+    .card.accent-pink::before { background: var(--gradient-pink); }
+    .card.accent-emerald::before { background: var(--gradient-emerald); }
+
+    /* Code Blocks */
+    pre {
+      background: #030712;
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 1.25rem;
+      overflow-x: auto;
+      margin: 1.5rem 0;
+    }
+
+    code {
+      font-family: 'Fira Code', monospace;
+      font-size: 0.9rem;
+      color: #e4e4e7;
+    }
+
+    .inline-code {
+      font-family: 'Fira Code', monospace;
+      background: rgba(255, 255, 255, 0.08);
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      font-size: 0.9em;
+      color: #f472b6;
+    }
+
+    /* Key Terms Highlighting */
+    .keyword { color: #f472b6; font-weight: 600; }
+    .type { color: #60a5fa; }
+    .decorator { color: #c084fc; font-weight: 500; }
+
+    /* Interactive Demos */
+    .demo-container {
+      margin: 2.5rem 0;
+      background: rgba(17, 24, 39, 0.6);
+      border: 1px solid rgba(139, 92, 246, 0.25);
+      border-radius: 16px;
+      padding: 2rem;
+      position: relative;
+    }
+
+    .demo-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      padding-bottom: 1rem;
+    }
+
+    .badge {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 0.25rem 0.6rem;
+      border-radius: 20px;
+      letter-spacing: 0.05em;
+    }
+
+    .badge-primary { background: rgba(139, 92, 246, 0.2); color: #c084fc; border: 1px solid rgba(139, 92, 246, 0.3); }
+
+    /* Signal Store Vis Graph */
+    .signal-graph {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 2rem;
+      margin: 2rem 0;
+    }
+
+    .node {
+      background: #1f2937;
+      border: 2px solid var(--text-muted);
+      border-radius: 12px;
+      padding: 1rem 1.5rem;
+      min-width: 160px;
+      text-align: center;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+    }
+
+    .node.active-sig {
+      border-color: var(--accent-primary);
+      box-shadow: 0 0 15px rgba(139, 92, 246, 0.5);
+      background: rgba(139, 92, 246, 0.1);
+    }
+
+    .node.active-computed {
+      border-color: var(--accent-secondary);
+      box-shadow: 0 0 15px rgba(236, 72, 153, 0.5);
+      background: rgba(236, 72, 153, 0.1);
+    }
+
+    .node.active-effect {
+      border-color: var(--accent-success);
+      box-shadow: 0 0 15px rgba(16, 185, 129, 0.5);
+      background: rgba(16, 185, 129, 0.1);
+    }
+
+    .arrow {
+      color: var(--text-muted);
+      font-size: 1.5rem;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.4; }
+      50% { opacity: 1; }
+    }
+
+    .btn {
+      background: var(--gradient-violet);
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.95rem;
+      transition: all 0.2s;
+      box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+    }
+
+    .btn:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(139, 92, 246, 0.4);
+    }
+
+    .btn:active {
+      transform: translateY(1px);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: none;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.4);
+      box-shadow: none;
+    }
+
+    .flex-row {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      justify-content: center;
+      margin: 1.5rem 0;
+    }
+
+    /* Live Output Console */
+    .console-out {
+      background: #030712;
+      border-radius: 8px;
+      padding: 1rem;
+      font-family: 'Fira Code', monospace;
+      color: #34d399;
+      font-size: 0.85rem;
+      max-height: 150px;
+      overflow-y: auto;
+      border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    /* Interactive Form Mock */
+    .form-row {
+      margin-bottom: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      text-align: left;
+    }
+
+    .form-row label {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #e4e4e7;
+    }
+
+    .form-row input {
+      background: #111827;
+      border: 1px solid var(--card-border);
+      border-radius: 6px;
+      padding: 0.65rem 0.85rem;
+      color: white;
+      font-family: inherit;
+      font-size: 0.95rem;
+      transition: border-color 0.2s;
+    }
+
+    .form-row input:focus {
+      outline: none;
+      border-color: var(--accent-primary);
+    }
+
+    .form-error {
+      color: #ef4444;
+      font-size: 0.8rem;
+      margin-top: 0.25rem;
+    }
+
+    .form-pending {
+      color: #60a5fa;
+      font-size: 0.8rem;
+      margin-top: 0.25rem;
+    }
+
+    .auth-toast {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background: #ef4444;
+      color: white;
+      padding: 1rem 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 10px 25px rgba(239, 68, 68, 0.3);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      transform: translateY(150%);
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      z-index: 100;
+    }
+
+    .auth-toast.show {
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- SVG Gradients -->
+  <svg style="width:0;height:0;position:absolute">
+    <linearGradient id="brand-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8b5cf6" />
+      <stop offset="100%" stop-color="#ec4899" />
+    </linearGradient>
+  </svg>
+
+  <div class="container">
+    
+    <!-- Sidebar Navigation -->
+    <aside>
+      <div>
+        <div class="brand">
+          <svg viewBox="0 0 24 24">
+            <path d="M12 2L2 22h4l6-12 6 12h4L12 2zm0 6l-3.5 7h7L12 8z"/>
+          </svg>
+          Angular 80/20 Hub
+        </div>
+        <nav>
+          <ul>
+            <li class="nav-item active" data-section="arch"><a href="#architecture">1. Core Architecture</a></li>
+            <li class="nav-item" data-section="scratch"><a href="#scratch">2. Project Initialization</a></li>
+            <li class="nav-item" data-section="toolkit"><a href="#toolkit">3. The 80/20 Core Features</a></li>
+          </ul>
+        </nav>
+      </div>
+      <div class="sidebar-footer">
+        Tailored for Senior Engineers
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main>
+      
+      <!-- Section 1: Architecture -->
+      <section id="arch" class="active">
+        <h1>Core Architecture Breakdown</h1>
+        <p class="subtitle">Understanding Angular's compiled execution and reactivity models.</p>
+        
+        <h2>No Virtual DOM: The Ivy Paradigm</h2>
+        <p>
+          Unlike React, Angular does not calculate VDOM tree diffs. The <span class="keyword">Ivy Compiler</span> parses component templates ahead of time (AOT) and converts them into linear, monomorphic, instruction-based rendering functions.
+        </p>
+
+        <div class="grid">
+          <div class="card accent-violet">
+            <h3>Ivy Compilation</h3>
+            <p>Compiles declarative bindings directly into incremental JavaScript execution pipelines. If a node changes, it updates the DOM element individually.</p>
+          </div>
+          <div class="card accent-pink">
+            <h3>Signals Graph</h3>
+            <p>A fine-grained, dependency-tracking DAG. When a signal is modified, only nodes reading that signal are notified. This is Zoneless compatibility.</p>
+          </div>
+        </div>
+
+        <h2>Interactive Signal Graph Simulator</h2>
+        <p>Interact with the live, vanilla implementation of Angular's reactive Signals graph below. Watch changes cascade through dependencies dynamically.</p>
+
+        <div class="demo-container">
+          <div class="demo-header">
+            <h3>Live Signals Cascade Simulator</h3>
+            <span class="badge badge-primary">Signals engine</span>
+          </div>
+
+          <div class="signal-graph">
+            <div class="node" id="node-count">
+              <div style="font-size: 0.8rem; color: var(--text-muted)">count()</div>
+              <div style="font-size: 1.5rem; font-weight: 700" id="val-count">0</div>
+              <span class="badge badge-primary">Signal</span>
+            </div>
+            <div class="arrow">➔</div>
+            <div class="node" id="node-double">
+              <div style="font-size: 0.8rem; color: var(--text-muted)">doubleCount()</div>
+              <div style="font-size: 1.5rem; font-weight: 700" id="val-double">0</div>
+              <span class="badge" style="background: rgba(236, 72, 153, 0.2); color: #f472b6">Computed</span>
+            </div>
+            <div class="arrow">➔</div>
+            <div class="node" id="node-effect">
+              <div style="font-size: 0.8rem; color: var(--text-muted)">effect()</div>
+              <div style="font-size: 0.9rem; margin-top:0.4rem" id="val-effect">Active</div>
+              <span class="badge" style="background: rgba(16, 185, 129, 0.2); color: #34d399">Effect DOM</span>
+            </div>
+          </div>
+
+          <div class="flex-row">
+            <button class="btn" id="btn-increment">Increment Count</button>
+            <button class="btn btn-secondary" id="btn-reset">Reset Engine</button>
+          </div>
+
+          <div class="console-out" id="console-signals">
+            [System Log] Reactive engine booted. Signals connected to graph.
+          </div>
+        </div>
+
+        <h2>Modern Dependency Injection</h2>
+        <p>Angular utilizes hierarchical injectors. Instead of constructor parameters, prefer the modern <span class="inline-code">inject()</span> API. It allows composition, makes type inference cleaner, and simplifies functional setups (such as Guards and Resolvers).</p>
+        
+        <pre><code><span class="decorator">@Injectable</span>({ providedIn: <span class="keyword">'root'</span> })
+<span class="keyword">export class</span> <span class="type">DataService</span> {
+  <span class="keyword">private</span> http = inject(<span class="type">HttpClient</span>); <span class="comment">// Fully typed, injected at runtime</span>
+}</code></pre>
+      </section>
+
+      <!-- Section 2: Project Scratch -->
+      <section id="scratch">
+        <h1>Creating a Project from Scratch</h1>
+        <p class="subtitle">Production settings, CLI workspace structure, and environment orchestration.</p>
+
+        <p>Initialize your workspace using the Angular CLI, enforcing strict compiling flags, SCSS compilation, and standalone component bootstrapping:</p>
+
+        <pre><code>npm install -g @angular/cli
+ng new senior-app --style=scss --routing --standalone --strict --package-manager=npm</code></pre>
+
+        <h2>Critical Workspace Configuration Settings</h2>
+        <div class="grid">
+          <div class="card accent-pink">
+            <h3>angular.json</h3>
+            <p>Configures application builders, assets compilation pathways, styles bundles, and environmental file substitutions (like staging vs prod).</p>
+          </div>
+          <div class="card accent-emerald">
+            <h3>app.config.ts</h3>
+            <p>The centralized registration file for Standalone components application configuration (Router configurations, interceptors, animations providers).</p>
+          </div>
+        </div>
+
+        <h2>Module Aliasing in tsconfig.json</h2>
+        <p>Avoid relative import paths such as <span class="inline-code">../../../../core/services/api.service</span>. Define TypeScript path maps inside your compiler settings:</p>
+        
+        <pre><code>{
+  <span class="keyword">"compilerOptions"</span>: {
+    <span class="keyword">"baseUrl"</span>: <span class="keyword">"./"</span>,
+    <span class="keyword">"paths"</span>: {
+      <span class="keyword">"@core/*"</span>: [<span class="keyword">"src/app/core/*"</span>],
+      <span class="keyword">"@shared/*"</span>: [<span class="keyword">"src/app/shared/*"</span>]
+    }
+  }
+}</code></pre>
+      </section>
+
+      <!-- Section 3: The 80/20 Toolkit -->
+      <section id="toolkit">
+        <h1>The 80/20 Core Features</h1>
+        <p class="subtitle">Strongly Typed Forms, Functional Routing guards, and the HTTP pipelines.</p>
+
+        <h2>Reactive Forms</h2>
+        <p>Implement strictly typed forms using <span class="inline-code">NonNullableFormBuilder</span>. This captures structural validity at compile-time and protects inputs from defaulting to null values.</p>
+
+        <h2>Live Config Form & Interceptor Simulator</h2>
+        <p>Submit the configuration form below. If the port input is set to <span class="keyword">401</span>, it simulates an API request returning an HTTP 401 response, triggering the global error interceptor that immediately logs you out.</p>
+
+        <div class="demo-container" style="max-width: 500px; margin: 2rem auto;">
+          <div class="demo-header">
+            <h3>Server Setup Dashboard</h3>
+            <span class="badge badge-primary">Form Group</span>
+          </div>
+
+          <div class="form-row">
+            <label>Server Domain</label>
+            <input type="text" id="input-domain" value="api.production.local" placeholder="e.g. localhost" />
+            <div class="form-error" id="err-domain" style="display:none">Domain is required.</div>
+          </div>
+
+          <div class="form-row">
+            <label>Server Port (Input 401 to trigger Auth Interceptor failure)</label>
+            <input type="number" id="input-port" value="8080" />
+            <div class="form-pending" id="pnd-port" style="display:none">Checking port availability...</div>
+            <div class="form-error" id="err-port" style="display:none">Port must be between 1024 and 65535.</div>
+            <div class="form-error" id="err-port-taken" style="display:none">Port is already in use by host.</div>
+          </div>
+
+          <div class="flex-row">
+            <button class="btn" style="width: 100%" id="btn-save-form">Apply Configurations</button>
+          </div>
+
+          <div class="console-out" id="console-form" style="background:#090d16">
+            [Form Console] Ready for evaluation.
+          </div>
+        </div>
+
+        <h2>Lazy Loading & Guards</h2>
+        <p>Keep your initial bundle lightweight by lazy loading routes. Functional guards allow injecting dependencies asynchronously:</p>
+        
+        <pre><code><span class="keyword">export const</span> authGuard: <span class="type">CanActivateFn</span> = (route, state) => {
+  <span class="keyword">const</span> auth = inject(<span class="type">AuthService</span>);
+  <span class="keyword">const</span> router = inject(<span class="type">Router</span>);
+  <span class="keyword">return</span> auth.isLoggedIn() ? <span class="keyword">true</span> : router.createUrlTree([<span class="keyword">'/login'</span>]);
+};</code></pre>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Auth Toast notifications -->
+  <div class="auth-toast" id="toast">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+    <span>[401 ERROR] Injected Error Interceptor caught Unauthorized API call. Redirecting to auth portal...</span>
+  </div>
+
+  <script>
+    // Navigation Routing System
+    const navItems = document.querySelectorAll('.nav-item');
+    const sections = document.querySelectorAll('main section');
+
+    navItems.forEach(item => {
+      item.addEventListener('click', () => {
+        navItems.forEach(i => i.classList.remove('active'));
+        sections.forEach(s => s.classList.remove('active'));
+        
+        item.classList.add('active');
+        const sectionId = item.getAttribute('data-section');
+        document.getElementById(sectionId).classList.add('active');
+      });
+    });
+
+    // 1. Live Signals Cascading Simulator Engine
+    let activeEffect = null;
+
+    class ReactiveSignal {
+      constructor(val) {
+        this._val = val;
+        this.subscribers = new Set();
+      }
+      get value() {
+        if (activeEffect) {
+          this.subscribers.add(activeEffect);
+        }
+        return this._val;
+      }
+      set value(newVal) {
+        if (this._val !== newVal) {
+          this._val = newVal;
+          this.subscribers.forEach(effectFn => effectFn());
+        }
+      }
+      update(fn) {
+        this.value = fn(this._val);
+      }
+    }
+
+    function signal(val) {
+      return new ReactiveSignal(val);
+    }
+
+    function computed(fn) {
+      const sig = signal();
+      const runEffect = () => {
+        activeEffect = runEffect;
+        sig.value = fn();
+        activeEffect = null;
+      };
+      runEffect();
+      return sig;
+    }
+
+    function effect(fn) {
+      const runEffect = () => {
+        activeEffect = runEffect;
+        fn();
+        activeEffect = null;
+      };
+      runEffect();
+    }
+
+    // Build the visual signal elements
+    const countSig = signal(0);
+    const doubleComp = computed(() => countSig.value * 2);
+
+    const elCountNode = document.getElementById('node-count');
+    const elDoubleNode = document.getElementById('node-double');
+    const elEffectNode = document.getElementById('node-effect');
+
+    const elCountVal = document.getElementById('val-count');
+    const elDoubleVal = document.getElementById('val-double');
+    const elEffectVal = document.getElementById('val-effect');
+    const consoleSignals = document.getElementById('console-signals');
+
+    function flashNode(el) {
+      el.classList.add('active-sig');
+      setTimeout(() => el.classList.remove('active-sig'), 300);
+    }
+
+    effect(() => {
+      const c = countSig.value;
+      const d = doubleComp.value;
+      
+      elCountVal.innerText = c;
+      elDoubleVal.innerText = d;
+      elEffectVal.innerText = `Updated DOM (${c})`;
+      
+      flashNode(elCountNode);
+      setTimeout(() => flashNode(elDoubleNode), 100);
+      setTimeout(() => flashNode(elEffectNode), 200);
+
+      const log = `[System Log] count changed to ${c} -> computed re-evaluated to ${d} -> effect DOM modified`;
+      consoleSignals.innerHTML = log + '<br>' + consoleSignals.innerHTML;
+    });
+
+    document.getElementById('btn-increment').addEventListener('click', () => {
+      countSig.update(v => v + 1);
+    });
+
+    document.getElementById('btn-reset').addEventListener('click', () => {
+      countSig.value = 0;
+      consoleSignals.innerHTML = "[System Log] Signal engine reset to 0.";
+    });
+
+    // 2. Interactive Server Config Form Validation Mock
+    const inputDomain = document.getElementById('input-domain');
+    const inputPort = document.getElementById('input-port');
+    const errDomain = document.getElementById('err-domain');
+    const errPort = document.getElementById('err-port');
+    const errPortTaken = document.getElementById('err-port-taken');
+    const pndPort = document.getElementById('pnd-port');
+    const consoleForm = document.getElementById('console-form');
+    const btnSaveForm = document.getElementById('btn-save-form');
+    const toast = document.getElementById('toast');
+
+    let debounceTimer = null;
+
+    inputPort.addEventListener('input', () => {
+      pndPort.style.display = 'block';
+      errPort.style.display = 'none';
+      errPortTaken.style.display = 'none';
+
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        pndPort.style.display = 'none';
+        const portVal = parseInt(inputPort.value);
+
+        if (isNaN(portVal) || portVal < 1024 || portVal > 65535) {
+          errPort.style.display = 'block';
+          consoleForm.innerText = `[Form State] INVALID: Port ${inputPort.value} out of range bounds.`;
+          return;
+        }
+
+        // Taken port mock check
+        if (portVal === 80 || portVal === 443 || portVal === 3000) {
+          errPortTaken.style.display = 'block';
+          consoleForm.innerText = `[Form State] INVALID: Async check returned Port ${portVal} is already bound to another process.`;
+          return;
+        }
+
+        consoleForm.innerText = `[Form State] VALID: Async validator confirmed port ${portVal} is open.`;
+      }, 500);
+    });
+
+    btnSaveForm.addEventListener('click', () => {
+      const portVal = parseInt(inputPort.value);
+
+      if (inputDomain.value.trim() === '') {
+        errDomain.style.display = 'block';
+        return;
+      } else {
+        errDomain.style.display = 'none';
+      }
+
+      if (portVal === 401) {
+        consoleForm.innerHTML = `<span style="color:#ef4444">[HTTP Error] POST /api/config returned 401 Unauthorized</span>`;
+        toast.classList.add('show');
+        setTimeout(() => {
+          toast.classList.remove('show');
+          // Fake redirect mapping
+          document.querySelector('[data-section="arch"]').click();
+          consoleSignals.innerHTML = `[Auth] Redirected back to public portal after intercepting 401 error.<br>` + consoleSignals.innerHTML;
+        }, 3000);
+        return;
+      }
+
+      consoleForm.innerHTML = `<span style="color:#10b981">[HTTP Success] Config successfully committed to backend! URL: http://${inputDomain.value}:${portVal}</span>`;
+    });
+  </script>
+</body>
+</html>
