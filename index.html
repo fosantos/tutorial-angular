@@ -1,1025 +1,734 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Angular for Senior Engineers: An Architectural & Production-Ready Deep Dive</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg-dark: #0b0f19;
-      --card-bg: rgba(20, 27, 45, 0.7);
-      --card-border: rgba(255, 255, 255, 0.08);
-      --text-main: #e2e8f0;
-      --text-muted: #94a3b8;
-      
-      /* Accent Gradients */
-      --accent-primary: #8b5cf6; /* Violet */
-      --accent-secondary: #ec4899; /* Pink */
-      --accent-success: #10b981; /* Emerald */
-      --accent-warning: #f59e0b; /* Amber */
-      
-      --gradient-violet: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
-      --gradient-pink: linear-gradient(135deg, #ec4899 0%, #be185d 100%);
-      --gradient-emerald: linear-gradient(135deg, #10b981 0%, #047857 100%);
-      --gradient-brand: linear-gradient(135deg, #a78bfa 0%, #f472b6 100%);
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    html {
-      scroll-behavior: smooth;
-    }
-
-    body {
-      font-family: 'Inter', sans-serif;
-      background-color: var(--bg-dark);
-      background-image: 
-        radial-gradient(at 0% 0%, rgba(139, 92, 246, 0.12) 0px, transparent 50%),
-        radial-gradient(at 100% 100%, rgba(236, 72, 153, 0.08) 0px, transparent 50%);
-      color: var(--text-main);
-      line-height: 1.7;
-      min-height: 100vh;
-    }
-
-    /* Container & Layout */
-    .app-layout {
-      display: flex;
-      max-width: 1500px;
-      margin: 0 auto;
-      min-height: 100vh;
-    }
-
-    /* Sidebar Navigation */
-    aside {
-      width: 320px;
-      border-right: 1px solid var(--card-border);
-      padding: 2.5rem 1.5rem;
-      background: rgba(15, 23, 42, 0.6);
-      backdrop-filter: blur(16px);
-      position: sticky;
-      top: 0;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      z-index: 10;
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      font-size: 1.15rem;
-      font-weight: 800;
-      background: var(--gradient-brand);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin-bottom: 2rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-
-    .brand svg {
-      width: 28px;
-      height: 28px;
-      fill: url(#brand-grad);
-    }
-
-    .toc-title {
-      font-size: 0.75rem;
-      font-weight: 700;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      margin-bottom: 0.75rem;
-      padding-left: 0.5rem;
-    }
-
-    nav {
-      flex: 1;
-      overflow-y: auto;
-      margin-bottom: 1.5rem;
-    }
-
-    nav ul {
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: 0.25rem;
-    }
-
-    nav a {
-      display: block;
-      padding: 0.65rem 0.75rem;
-      color: var(--text-muted);
-      text-decoration: none;
-      border-radius: 6px;
-      font-weight: 500;
-      font-size: 0.9rem;
-      transition: all 0.2s ease;
-      border-left: 3px solid transparent;
-    }
-
-    nav a:hover {
-      color: var(--text-main);
-      background: rgba(255, 255, 255, 0.03);
-    }
-
-    nav li.active a {
-      color: #c084fc;
-      background: rgba(139, 92, 246, 0.1);
-      border-left-color: var(--accent-primary);
-      font-weight: 600;
-    }
-
-    .sidebar-footer {
-      font-size: 0.75rem;
-      color: var(--text-muted);
-      border-top: 1px solid var(--card-border);
-      padding-top: 1.25rem;
-      text-align: center;
-    }
-
-    /* Main Content Area */
-    main {
-      flex: 1;
-      padding: 3.5rem 5rem;
-      max-width: calc(100% - 320px);
-      overflow-y: auto;
-    }
-
-    /* Article Styling */
-    article {
-      max-width: 900px;
-      margin: 0 auto;
-    }
-
-    .page-header {
-      border-bottom: 1px solid var(--card-border);
-      padding-bottom: 2rem;
-      margin-bottom: 3rem;
-    }
-
-    h1 {
-      font-size: 2.85rem;
-      font-weight: 800;
-      line-height: 1.2;
-      background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin-bottom: 1rem;
-    }
-
-    .meta-desc {
-      font-size: 1.2rem;
-      color: var(--text-muted);
-      font-weight: 400;
-    }
-
-    h2 {
-      font-size: 1.95rem;
-      font-weight: 700;
-      color: #ffffff;
-      margin: 3.5rem 0 1.5rem;
-      padding-bottom: 0.5rem;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-      scroll-margin-top: 2rem;
-    }
-
-    h3 {
-      font-size: 1.35rem;
-      font-weight: 600;
-      color: #f1f5f9;
-      margin: 2rem 0 1rem;
-    }
-
-    p {
-      color: #cbd5e1;
-      margin-bottom: 1.5rem;
-      font-size: 1.05rem;
-    }
-
-    ul, ol {
-      margin-bottom: 1.5rem;
-      padding-left: 1.5rem;
-      color: #cbd5e1;
-    }
-
-    li {
-      margin-bottom: 0.5rem;
-      font-size: 1.05rem;
-    }
-
-    /* Code Block Styling */
-    pre {
-      background: #030712;
-      border: 1px solid var(--card-border);
-      border-radius: 12px;
-      padding: 1.5rem;
-      overflow-x: auto;
-      margin: 1.5rem 0;
-      box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.8);
-    }
-
-    code {
-      font-family: 'Fira Code', monospace;
-      font-size: 0.92rem;
-      color: #e2e8f0;
-    }
-
-    .inline-code {
-      font-family: 'Fira Code', monospace;
-      background: rgba(255, 255, 255, 0.08);
-      padding: 0.2rem 0.45rem;
-      border-radius: 6px;
-      font-size: 0.88em;
-      color: #f472b6;
-    }
-
-    /* Code Highlight Colors */
-    .keyword { color: #f472b6; font-weight: 600; }
-    .type { color: #60a5fa; }
-    .decorator { color: #c084fc; font-weight: 500; }
-    .comment { color: #64748b; font-style: italic; }
-    .string { color: #34d399; }
-    .params { color: #fb923c; }
-
-    /* Alert Boxes (Callouts) */
-    .alert {
-      padding: 1.25rem 1.5rem;
-      border-left: 4px solid transparent;
-      border-radius: 0 12px 12px 0;
-      margin: 1.75rem 0;
-      background: rgba(255, 255, 255, 0.02);
-    }
-    .alert-tip {
-      border-left-color: var(--accent-primary);
-      background: rgba(139, 92, 246, 0.05);
-    }
-    .alert-important {
-      border-left-color: var(--accent-warning);
-      background: rgba(245, 158, 11, 0.05);
-    }
-    .alert h4 {
-      margin-bottom: 0.5rem;
-      font-size: 1rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-    .alert-tip h4 { color: #c084fc; }
-    .alert-important h4 { color: #fbbf24; }
-    .alert p {
-      margin-bottom: 0;
-      font-size: 0.95rem;
-      color: #cbd5e1;
-    }
-
-    /* Grid & Cards */
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 1.5rem;
-      margin: 2rem 0;
-    }
-
-    .card {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 12px;
-      padding: 1.75rem;
-      backdrop-filter: blur(12px);
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .card:hover {
-      transform: translateY(-4px);
-      border-color: rgba(139, 92, 246, 0.3);
-      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
-    }
-
-    .card h3 {
-      margin-top: 0;
-      font-size: 1.15rem;
-      margin-bottom: 0.5rem;
-    }
-
-    /* Interactive Demo Sandbox Widgets */
-    .sandbox {
-      margin: 2.5rem 0;
-      background: rgba(15, 23, 42, 0.5);
-      border: 1px solid rgba(139, 92, 246, 0.2);
-      border-radius: 16px;
-      padding: 2.25rem;
-      backdrop-filter: blur(10px);
-    }
-
-    .sandbox-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1.5rem;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-      padding-bottom: 0.75rem;
-    }
-
-    .sandbox-title {
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: #ffffff;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .badge {
-      font-size: 0.7rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      padding: 0.25rem 0.6rem;
-      border-radius: 20px;
-      letter-spacing: 0.05em;
-    }
-
-    .badge-primary {
-      background: rgba(139, 92, 246, 0.15);
-      color: #c084fc;
-      border: 1px solid rgba(139, 92, 246, 0.25);
-    }
-
-    .badge-secondary {
-      background: rgba(236, 72, 153, 0.15);
-      color: #f472b6;
-      border: 1px solid rgba(236, 72, 153, 0.25);
-    }
-
-    /* Dynamic Reactivity Graph */
-    .graph-flow {
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 1.5rem;
-      margin: 2rem 0;
-    }
-
-    .node {
-      background: #1e293b;
-      border: 2px solid #475569;
-      border-radius: 12px;
-      padding: 1rem 1.25rem;
-      min-width: 170px;
-      text-align: center;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .node.active-sig {
-      border-color: var(--accent-primary);
-      box-shadow: 0 0 20px rgba(139, 92, 246, 0.4);
-      background: rgba(139, 92, 246, 0.08);
-    }
-
-    .node.active-computed {
-      border-color: var(--accent-secondary);
-      box-shadow: 0 0 20px rgba(236, 72, 153, 0.4);
-      background: rgba(236, 72, 153, 0.08);
-    }
-
-    .node.active-effect {
-      border-color: var(--accent-success);
-      box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
-      background: rgba(16, 185, 129, 0.08);
-    }
-
-    .arrow {
-      color: #64748b;
-      font-size: 1.5rem;
-      user-select: none;
-    }
-
-    .btn {
-      background: var(--gradient-violet);
-      color: white;
-      border: none;
-      padding: 0.65rem 1.25rem;
-      font-weight: 600;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 0.9rem;
-      transition: all 0.2s;
-      box-shadow: 0 4px 12px rgba(139, 92, 246, 0.25);
-    }
-
-    .btn:hover {
-      opacity: 0.95;
-      transform: translateY(-1px);
-    }
-
-    .btn:active {
-      transform: translateY(1px);
-    }
-
-    .btn-secondary {
-      background: transparent;
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      box-shadow: none;
-    }
-
-    .btn-secondary:hover {
-      background: rgba(255, 255, 255, 0.05);
-      border-color: rgba(255, 255, 255, 0.3);
-    }
-
-    .actions-row {
-      display: flex;
-      gap: 1rem;
-      justify-content: center;
-      margin: 1.5rem 0 1rem;
-    }
-
-    .console {
-      background: #020617;
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      border-radius: 8px;
-      padding: 1rem;
-      font-family: 'Fira Code', monospace;
-      color: #34d399;
-      font-size: 0.8rem;
-      max-height: 140px;
-      overflow-y: auto;
-      text-align: left;
-    }
-
-    /* Sandbox Form Fields */
-    .form-group {
-      margin-bottom: 1.25rem;
-      text-align: left;
-    }
-
-    .form-group label {
-      display: block;
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: #cbd5e1;
-      margin-bottom: 0.5rem;
-    }
-
-    .form-group input {
-      width: 100%;
-      background: #0f172a;
-      border: 1px solid var(--card-border);
-      border-radius: 8px;
-      padding: 0.7rem 0.9rem;
-      color: #ffffff;
-      font-family: inherit;
-      font-size: 0.95rem;
-      transition: all 0.2s;
-    }
-
-    .form-group input:focus {
-      outline: none;
-      border-color: var(--accent-primary);
-      box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
-    }
-
-    .error-msg {
-      color: #f87171;
-      font-size: 0.8rem;
-      margin-top: 0.35rem;
-    }
-
-    .pending-msg {
-      color: #60a5fa;
-      font-size: 0.8rem;
-      margin-top: 0.35rem;
-    }
-
-    .toast {
-      position: fixed;
-      bottom: 2rem;
-      right: 2rem;
-      background: #ef4444;
-      color: white;
-      padding: 1rem 1.5rem;
-      border-radius: 8px;
-      box-shadow: 0 10px 25px rgba(239, 68, 68, 0.3);
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      transform: translateY(150%);
-      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      z-index: 100;
-    }
-
-    .toast.show {
-      transform: translateY(0);
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Angular 17+ Senior Engineer Fast-Track</title>
+    <style>
+        :root {
+            --bg: #0d1117;
+            --text: #c9d1d9;
+            --heading: #e6edf3;
+            --accent: #58a6ff;
+            --code-bg: #161b22;
+            --border: #30363d;
+            --success: #3fb950;
+            --warning: #d29922;
+            --danger: #f85149;
+            --muted: #8b949e;
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+        }
+        h1, h2, h3, h4 {
+            color: var(--heading);
+            font-weight: 600;
+            letter-spacing: -0.02em;
+        }
+        h1 {
+            font-size: 2.2rem;
+            border-bottom: 2px solid var(--accent);
+            padding-bottom: 0.4em;
+            margin-bottom: 1.5rem;
+        }
+        h2 {
+            font-size: 1.6rem;
+            margin-top: 3rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.3em;
+        }
+        h3 {
+            font-size: 1.25rem;
+            margin-top: 2rem;
+            color: var(--accent);
+            border: none;
+        }
+        h4 { font-size: 1.1rem; margin-top: 1.5rem; color: var(--warning); }
+        p, li { font-size: 1rem; }
+        ul, ol { padding-left: 1.5rem; }
+        li { margin-bottom: 0.5rem; }
+        code {
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+            background: var(--code-bg);
+            padding: 0.15em 0.4em;
+            border-radius: 4px;
+            font-size: 0.9em;
+            color: #ff7b72;
+        }
+        pre {
+            background: var(--code-bg);
+            padding: 1.2rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            border: 1px solid var(--border);
+            margin: 1.2rem 0;
+        }
+        pre code {
+            padding: 0;
+            background: none;
+            color: var(--text);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        .comment { color: #8b949e; font-style: italic; }
+        .keyword { color: #ff7b72; }
+        .type { color: #ffa657; }
+        .string { color: #a5d6ff; }
+        .function { color: #d2a8ff; }
+        .tag { color: #7ee787; }
+        .exercise {
+            background: rgba(88, 166, 255, 0.06);
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--accent);
+            padding: 1.25rem;
+            margin: 2rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+        .exercise h4 { margin-top: 0; color: var(--accent); }
+        .exercise ul { margin-bottom: 0; }
+        .highlight { color: var(--warning); font-weight: 600; }
+        .success { color: var(--success); }
+        .danger { color: var(--danger); }
+        blockquote {
+            border-left: 4px solid var(--border);
+            padding-left: 1rem;
+            color: var(--muted);
+            margin: 1rem 0;
+        }
+        hr {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 2.5rem 0;
+        }
+        .file-path {
+            display: inline-block;
+            background: rgba(88, 166, 255, 0.1);
+            color: var(--accent);
+            padding: 0.1em 0.5em;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.9em;
+        }
+    </style>
+<base target="_blank">
 </head>
 <body>
 
-  <!-- SVG Gradients -->
-  <svg style="width:0;height:0;position:absolute">
-    <linearGradient id="brand-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#8b5cf6" />
-      <stop offset="100%" stop-color="#ec4899" />
-    </linearGradient>
-  </svg>
+<h1>Angular 17+ Senior Engineer Fast-Track</h1>
+<p>
+    A zero-fluff, architecture-first guide for senior engineers transitioning into Angular from React, Vue, or other modern ecosystems. 
+    We assume mastery of TypeScript, component-based design, and reactive programming. 
+    <strong>Goal:</strong> Reach 80% daily productivity by internalizing the 20% of Angular that matters in modern enterprise codebases.
+</p>
 
-  <div class="app-layout">
-    
-    <!-- Sidebar -->
-    <aside>
-      <div>
-        <div class="brand">
-          <svg viewBox="0 0 24 24">
-            <path d="M12 2L2 22h4l6-12 6 12h4L12 2zm0 6l-3.5 7h7L12 8z"/>
-          </svg>
-          Angular Senior Hub
-        </div>
-        
-        <div class="toc-title">Table of Contents</div>
-        <nav>
-          <ul>
-            <li class="nav-item active"><a href="#arch">1. Core Architecture</a></li>
-            <li class="nav-item"><a href="#scratch">2. Project Initialization</a></li>
-            <li class="nav-item"><a href="#toolkit">3. Core Features (80/20)</a></li>
-            <li class="nav-item"><a href="#exercises">4. Fixation Solutions</a></li>
-          </ul>
-        </nav>
-      </div>
-      <div class="sidebar-footer">
-        Pareto 80/20 Guideline
-      </div>
-    </aside>
+<hr>
 
-    <!-- Main Content -->
-    <main>
-      <article>
-        
-        <div class="page-header">
-          <h1>Angular for Senior Engineers: An Architectural & Production-Ready Deep Dive</h1>
-          <p class="meta-desc">A comprehensive, fast-paced manual focused entirely on standalone structures, fine-grained reactivity, strictly typed forms, and dependency injection patterns.</p>
-        </div>
+<h2>1. Core Architecture Breakdown</h2>
 
-        <!-- Section 1 -->
-        <section id="arch">
-          <h2>1. Core Architecture Breakdown</h2>
-          
-          <h3>The Mental Model Shift</h3>
-          <p>If you are transitioning from Virtual DOM libraries (like React or Vue):</p>
-          <ul>
-            <li><strong>No Virtual DOM:</strong> Angular compiles HTML templates ahead of time (AOT) via the Ivy compiler directly into monomorphic DOM manipulation instructions. Updates bypass tree diffing.</li>
-            <li><strong>Static vs. Dynamic Execution:</strong> Instead of components executing from top-to-bottom on every state change, Angular components are class instances. Reactivity is isolated to specific bindings or Signal updates.</li>
-            <li><strong>Hierarchical Separation:</strong> Business logic is strongly decoupled from presentation layout. Services manage network state, components present UI, and Dependency Injection couples them together at runtime.</li>
-          </ul>
+<h3>The High-Level Blueprint</h3>
+<p>
+    Angular is a <strong>platform</strong>, not merely a view library. At runtime, your application is two distinct trees operating in parallel:
+</p>
+<<ol>
+    <li><strong>The Component Tree:</strong> The UI hierarchy rendered via the platform renderer.</li>
+    <li><strong>The Injector Tree:</strong> A hierarchical dependency resolution graph that mirrors (but is not identical to) the component tree.</li>
+</ol>
+<p>
+    Every component, directive, pipe, and service participates in both trees. Understanding the relationship between them is the single most important mental model shift.
+</p>
 
-          <h3>Modern Angular Building Blocks</h3>
-          
-          <h4>1. Standalone Components</h4>
-          <p>Angular 17+ defaults to Standalone components. The legacy boilerplate of <span class="inline-code">NgModule</span> has been removed. Standalone components declare their dependencies directly in their component metadata:</p>
+<h3>The Mental Model Shift</h3>
+<table style="width:100%; border-collapse: collapse; margin: 1rem 0;">
+    <tr style="border-bottom: 1px solid var(--border);">
+        <th style="text-align:left; padding: 0.5rem;">Concept</th>
+        <th style="text-align:left; padding: 0.5rem;">React / Vue Mental Model</th>
+        <th style="text-align:left; padding: 0.5rem;">Angular Mental Model</th>
+    </tr>
+    <tr>
+        <td style="padding: 0.5rem;">Reactivity</td>
+        <td style="padding: 0.5rem;">Hooks / Proxies drive UI updates</td>
+        <td style="padding: 0.5rem;">Explicit signal graph <em>or</em> implicit Zone.js patches trigger Change Detection</td>
+    </tr>
+    <tr>
+        <td style="padding: 0.5rem;">State ↔ UI</td>
+        <td style="padding: 0.5rem;">UI = f(state)</td>
+        <td style="padding: 0.5rem;">UI = f(signals) + DI tree provides state services</td>
+    </tr>
+    <tr>
+        <td style="padding: 0.5rem;">Composition</td>
+        <td style="padding: 0.5rem;">Component props / slots</td>
+        <td style="padding: 0.5rem;">Component inputs + DI provider overrides + template composition</td>
+    </tr>
+    <tr>
+        <td style="padding: 0.5rem;">Side Effects</td>
+        <td style="padding: 0.5rem;">useEffect / watchers</td>
+        <td style="padding: 0.5rem;"><code>effect()</code> (signals) or lifecycle hooks (imperative escape hatches)</td>
+    </tr>
+</table>
 
-          <pre><code><span class="decorator">@Component</span>({
-  selector: <span class="string">'app-user-card'</span>,
+<h3>Modern Building Blocks (Angular 17+)</h3>
+
+<h4>Standalone Components</h4>
+<p>
+    <code>NgModule</code> is legacy. Modern Angular defaults to <strong>Standalone Components</strong>. A component is self-describing: it declares its own dependencies, routing metadata, and provider scope.
+</p>
+<pre><code><span class="comment">// main.ts</span>
+<span class="keyword">import</span> { bootstrapApplication } <span class="keyword">from</span> <span class="string">'@angular/platform-browser'</span>;
+<span class="keyword">import</span> { AppComponent } <span class="keyword">from</span> <span class="string">'./app/app.component'</span>;
+<span class="keyword">import</span> { appConfig } <span class="keyword">from</span> <span class="string">'./app/app.config'</span>;
+
+bootstrapApplication(AppComponent, appConfig).catch(<span class="function">err</span> => console.error(err));
+
+<span class="comment">// app.component.ts</span>
+<span class="keyword">import</span> { Component } <span class="keyword">from</span> <span class="string">'@angular/core'</span>;
+<span class="keyword">import</span> { RouterOutlet } <span class="keyword">from</span> <span class="string">'@angular/router'</span>;
+<span class="keyword">import</span> { HeaderComponent } <span class="keyword">from</span> <span class="string">'./shell/header.component'</span>;
+
+@Component({
+  selector: <span class="string">'app-root'</span>,
   standalone: <span class="keyword">true</span>,
-  imports: [CommonModule, FocusHighlightDirective],
+  imports: [RouterOutlet, HeaderComponent], <span class="comment">// Self-describing dependency graph</span>
   template: <span class="string">`
-    &lt;div class="card" [class.active]="isActive"&gt;
-      &lt;h3&gt;{{ name }}&lt;/h3&gt;
-      &lt;button (click)="select.emit(name)"&gt;Select&lt;/button&gt;
-    &lt;/div&gt;
-  `</span>
+    &lt;app-header /&gt;
+    &lt;router-outlet /&gt;
+  `</span>,
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-<span class="keyword">export class</span> <span class="type">UserCardComponent</span> {
-  <span class="decorator">@Input</span>({ required: <span class="keyword">true</span> }) name!: <span class="type">string</span>;
-  <span class="decorator">@Input</span>({ transform: booleanAttribute }) isActive = <span class="keyword">false</span>;
-  <span class="decorator">@Output</span>() select = <span class="keyword">new</span> <span class="type">EventEmitter</span>&lt;<span class="type">string</span>&gt;();
+<span class="keyword">export class</span> <span class="type">AppComponent</span> {}</code></pre>
+
+<h4>Directives & Pipes</h4>
+<p>
+    <strong>Attribute Directives</strong> modify host element behavior (e.g., permission-based visibility). <strong>Structural</strong> logic is now handled via template control flow (<code>@if</code>, <code>@for</code>, <code>@switch</code>) in Angular 17+, replacing <code>*ngIf</code> and <code>*ngFor</code>.
+</p>
+<p>
+    <strong>Pipes</strong> are pure transformation functions in templates. In signal-based architectures, prefer <code>computed()</code> over custom pipes for derived state. The <code>async</code> pipe is obsolete when using <code>toSignal()</code>.
+</p>
+
+<h4>Services & The <code>inject()</code> Paradigm</h4>
+<p>
+    Services are plain TypeScript classes decorated with <code>@Injectable</code>. The modern pattern uses the <code>inject()</code> function instead of constructor injection, enabling cleaner inheritance and safer use in lifecycle hooks.
+</p>
+<pre><code><span class="keyword">@Injectable</span>({ providedIn: <span class="string">'root'</span> })
+<span class="keyword">export class</span> <span class="type">UserService</span> {
+  <span class="keyword">private readonly</span> http = inject(HttpClient);
+  <span class="keyword">private readonly</span> config = inject(APP_CONFIG);
+
+  <span class="keyword">readonly</span> users = signal&lt;User[]&gt;([]);
+
+  loadUsers(): <span class="keyword">void</span> {
+    <span class="keyword">this</span>.http.get&lt;User[]&gt;(<span class="string">`</span>${<<span class="keyword">this</span>.config.apiUrl}<span class="string">/users`</span>)
+      .pipe(takeUntilDestroyed()) <span class="comment">// Auto-unsubscribe via DestroyRef</span>
+      .subscribe(<span class="function">data</span> => <span class="keyword">this</span>.users.set(data));
+  }
 }</code></pre>
 
-          <div class="alert alert-tip">
-            <h4>Architectural Pattern: Deferred Loading</h4>
-            <p>Use the compiler-level <span class="inline-code">@defer</span> block to automatically split bundle chunks and lazy-load components based on interaction parameters (e.g. viewport intersection, user interaction, idle browser status).</p>
-          </div>
+<h3>Dependency Injection (DI) Deep Dive</h3>
+<p>
+    Angular's DI is a <strong>hierarchical tree of injectors</strong>, not a flat service locator.
+</p>
+<ul>
+    <li><strong>Root Injector:</strong> Created at bootstrap. <code>providedIn: 'root'</code> registers here.</li>
+    <li><strong>Component Injector:</strong> Each component can declare <code>providers: [...]</code>, creating a child injector scoped to that component and its descendants.</li>
+    <li><strong>Resolution Algorithm:</strong> Angular walks up the injector tree from the requesting component until it finds a provider. If none is found, it throws (unless <code>@Optional()</code> is used).</li>
+</ul>
+<pre><code><span class="comment">// Hierarchical override pattern</span>
+<span class="keyword">export const</span> API_URL = <span class="keyword">new</span> InjectionToken&lt;<span class="type">string</span>&gt;(<span class="string">'api.url'</span>);
 
-          <h4>2. Directives & Pipes</h4>
-          <p>Directives extend HTML element behavior (attributes vs structural transformations). Pipes perform pure data transformation formatting in templates, caching returns by reference inputs (pure mode).</p>
+<span class="comment">// Parent provides default</span>
+providers: [{ provide: API_URL, useValue: <span class="string">'https://api.default.com'</span> }]
 
-          <h3>Dependency Injection (DI) System</h3>
-          <p>Angular features a powerful, hierarchical Dependency Injection system. The compiler resolves dependencies by searching upwards through the injection scope tree:</p>
-          <ol>
-            <li><strong>Element Injector:</strong> Declared inside component/directive <span class="inline-code">providers: [...]</span>. Scoped locally to that component tree instance.</li>
-            <li><strong>Environment Injector:</strong> Set up via app bootstrap configurations or route declarations.</li>
-            <li><strong>Root Injector:</strong> Declared globally via <span class="inline-code">@Injectable({ providedIn: 'root' })</span>.</li>
-          </ol>
-          <p>Modern Angular relies on the <span class="inline-code">inject()</span> function over traditional constructor injection. It increases Type inference stability and works seamlessly in functional contexts.</p>
+<span class="comment">// Child feature overrides</span>
+@Component({
+  providers: [{ provide: API_URL, useValue: <span class="string">'https://api.billing.com'</span> }]
+})
+<span class="keyword">export class</span> <span class="type">BillingComponent</span> {
+  <span class="comment">// Resolves to the overridden billing URL, not the root default</span>
+  <span class="keyword">private readonly</span> apiUrl = inject(API_URL);
+}</code></pre>
 
-          <h3>Reactivity: Zone.js vs. Signals</h3>
-          <p>Historically, Angular used <span class="inline-code">Zone.js</span> to monkey-patch async APIs and trigger dirty checking globally. Angular 17/18+ introduces fine-grained reactive <span class="keyword">Signals</span>, tracking exactly where values are read in the DOM template. This enables the complete removal of Zone.js (Zoneless Angular) for maximized performance.</p>
+<h3>Change Detection: Zone.js vs. Signals</h3>
+<table style="width:100%; border-collapse: collapse; margin: 1rem 0;">
+    <tr style="border-bottom: 1px solid var(--border);">
+        <th style="text-align:left; padding: 0.5rem;">Mechanism</th>
+        <th style="text-align:left; padding: 0.5rem;">Trigger</th>
+        <th style="text-align:left; padding: 0.5rem;">Performance Model</th>
+    </tr>
+    <tr>
+        <td style="padding: 0.5rem;"><strong>Zone.js (Legacy)</strong></td>
+        <td style="padding: 0.5rem;">Monkey-patches all async APIs (setTimeout, Promise, XHR, DOM events). Any async callback triggers <em>global</em> CD.</td>
+        <td style="padding: 0.5rem;">O(n) tree traversal. Error-prone, heavy bundle cost.</td>
+    </tr>
+    <tr>
+        <td style="padding: 0.5rem;"><strong>Signals (Modern)</strong></td>
+        <td style="padding: 0.5rem;">Explicit write (<code>.set()</code>, <code>.update()</code>) notifies subscribers.</td>
+        <td style="padding: 0.5rem;">O(1) granular updates. No Zone.js needed. Use <code>OnPush</code> everywhere.</td>
+    </tr>
+</table>
+<pre><code><span class="keyword">import</span> { signal, computed, effect } <span class="keyword">from</span> <span class="string">'@angular/core'</span>;
 
-          <div class="sandbox">
-            <div class="sandbox-header">
-              <div class="sandbox-title">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                Signal Graph Simulator
-              </div>
-              <span class="badge badge-primary">Dynamic Runtime Visualizer</span>
-            </div>
-            
-            <div class="graph-flow">
-              <div class="node" id="node-count">
-                <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">signal(count)</div>
-                <div style="font-size: 1.6rem; font-weight: 800; margin: 0.25rem 0;" id="val-count">0</div>
-                <span class="badge" style="background: rgba(139, 92, 246, 0.15); color: #c084fc">Writable</span>
-              </div>
-              <div class="arrow">➔</div>
-              <div class="node" id="node-double">
-                <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">computed(double)</div>
-                <div style="font-size: 1.6rem; font-weight: 800; margin: 0.25rem 0;" id="val-double">0</div>
-                <span class="badge" style="background: rgba(236, 72, 153, 0.15); color: #f472b6">Computed</span>
-              </div>
-              <div class="arrow">➔</div>
-              <div class="node" id="node-effect">
-                <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">effect(render)</div>
-                <div style="font-size: 0.95rem; font-weight: 600; margin: 0.5rem 0;" id="val-effect">Idle</div>
-                <span class="badge" style="background: rgba(16, 185, 129, 0.15); color: #34d399">Effect DOM</span>
-              </div>
-            </div>
+<span class="keyword">export class</span> <span class="type">Store</span> {
+  <span class="keyword">private readonly</span> state = signal&lt;State&gt;(initialState);
 
-            <div class="actions-row">
-              <button class="btn" id="btn-increment">count.update(v => v + 1)</button>
-              <button class="btn btn-secondary" id="btn-reset">Reset</button>
-            </div>
-            
-            <div class="console" id="console-signals">
-              [System] Reactivity sandbox initialized. Click the action button to cascade state changes.
-            </div>
-          </div>
-        </section>
+  <span class="comment">// Public readonly access</span>
+  <span class="keyword">readonly</span> users = computed(<span class="function">() =></span> <span class="keyword">this</span>.state().users);
+  <span class="keyword">readonly</span> activeCount = computed(<span class="function">() =></span> <span class="keyword">this</span>.users().filter(<span class="function">u</span> => u.active).length);
 
-        <!-- Section 2 -->
-        <section id="scratch" style="display:none;">
-          <h2>2. Creating a Project from Scratch</h2>
-          
-          <h3>CLI Installation & Project Bootstrapping</h3>
-          <p>Install the Angular command line interface globally or execute directly via NPX:</p>
-          <pre><code>npm install -g @angular/cli
-ng new senior-app --style=scss --routing --standalone --strict --package-manager=npm</code></pre>
+  <span class="keyword">constructor</span>() {
+    <span class="comment">// Side effect: runs whenever activeCount changes</span>
+    effect(<span class="function">() =></span> {
+      console.log(<span class="string">'Active users:'</span>, <span class="keyword">this</span>.activeCount());
+    });
+  }
 
-          <h3>Workspace Anatomy</h3>
-          <pre><code>senior-app/
-├── angular.json               <span class="comment"># CLI workspace configurations (builder targets, CSS bundles)</span>
-├── tsconfig.json              <span class="comment"># Base TypeScript settings</span>
-├── tsconfig.app.json          <span class="comment"># Application compiler options</span>
-├── src/
-│   ├── main.ts                <span class="comment"># Entry point bootstrapping root standalone component</span>
-│   └── app/
-│       ├── app.config.ts      <span class="comment"># Main Configuration Providers (routers, HTTP clients, animations)</span>
-│       └── app.routes.ts      <span class="comment"># Application routing rules</span></code></pre>
+  setUsers(users: User[]): <span class="keyword">void</span> {
+    <span class="keyword">this</span>.state.update(<span class="function">s</span> => ({ ...s, users }));
+  }
+}</code></pre>
 
-          <h3>Configuration Implementation</h3>
-          <p>In standalone architectures, provider configurations are injected globally inside <span class="inline-code">app.config.ts</span>:</p>
+<div class="exercise">
+    <h4>Exercise 1: Architectural Refactor & DI Hierarchy</h4>
+    <p>You inherit a legacy Angular 14 e-commerce monolith structured with <code>SharedModule</code>, <code>CoreModule</code>, and five feature <code>NgModules</code>.</p>
+    <ul>
+        <li>Provide a step-by-step migration strategy to eliminate <strong>all</strong> modules and convert every feature to <code>loadComponent</code> lazy loading.</li>
+        <li>The <code>CheckoutService</code> must remain scoped <strong>only</strong> to the checkout feature subtree. Implement this using component-level <code>providers</code> in the new standalone world.</li>
+        <li>Create a root <code>APP_INITIALIZER</code> (using <code>inject()</code>) that fetches tenant configuration <em>before</em> the first route render. The config must be available via an <code>InjectionToken</code> to all lazy-loaded features.</li>
+    </ul>
+    <p><strong>Deliverable:</strong> A migration plan plus the refactored <code>main.ts</code>, <code>app.config.ts</code>, and the checkout feature entry component.</p>
+</div>
 
-          <pre><code><span class="comment">// src/app/app.config.ts</span>
-<span class="keyword">export const</span> <span class="type">appConfig</span>: <span class="type">ApplicationConfig</span> = {
+<hr>
+
+<h2>2. Creating a Project from Scratch</h2>
+
+<h3>CLI Installation & Initialization</h3>
+<pre><code><span class="comment"># Install the latest stable CLI globally</span>
+npm install -g @angular/cli@latest
+
+<span class="comment"># Scaffold a production-grade workspace</span>
+ng new enterprise-app \
+  --routing \
+  --style=scss \
+  --standalone \
+  --skip-tests \
+  --ssr=false \
+  --strict
+
+cd enterprise-app
+ng serve</code></pre>
+
+<h3>Critical Workspace Files</h3>
+
+<h4><span class="file-path">angular.json</span></h4>
+<p>
+    The workspace architect configuration. Controls builders, budgets, asset pipelines, and style preprocessing.
+    Senior engineers must understand the <code>build</code> target options: <code>optimization</code>, <code>outputHashing</code>, and <code>budgets</code> to prevent bundle regressions in CI.
+</p>
+<pre><code><span class="string">"architect"</span>: {
+  <span class="string">"build"</span>: {
+    <span class="string">"builder"</span>: <span class="string">"@angular-devkit/build-angular:application"</span>,
+    <span class="string">"options"</span>: {
+      <span class="string">"outputPath"</span>: <span class="string">"dist/enterprise-app"</span>,
+      <span class="string">"index"</span>: <span class="string">"src/index.html"</span>,
+      <span class="string">"browser"</span>: <span class="string">"src/main.ts"</span>,
+      <span class="string">"styles"</span>: [<span class="string">"src/styles.scss"</span>],
+      <span class="string">"stylePreprocessorOptions"</span>: {
+        <span class="string">"includePaths"</span>: [<span class="string">"src/styles"</span>]
+      }
+    },
+    <span class="string">"configurations"</span>: {
+      <span class="string">"production"</span>: {
+        <span class="string">"budgets"</span>: [
+          {
+            <span class="string">"type"</span>: <span class="string">"initial"</span>,
+            <span class="string">"maximumWarning"</span>: <span class="string">"500kb"</span>,
+            <span class="string">"maximumError"</span>: <span class="string">"1mb"</span>
+          }
+        ],
+        <span class="string">"outputHashing"</span>: <span class="string">"all"</span>
+      }
+    }
+  }
+}</code></pre>
+
+<h4><span class="file-path">tsconfig.json</span></h4>
+<p>
+    Angular strict mode is non-negotiable for production codebases. Ensure <code>strict</code>, <code>noImplicitAny</code>, and <code>strictNullChecks</code> are enabled. Path mapping is critical for monorepo-style aliases.
+</p>
+<pre><code>{
+  <span class="string">"compilerOptions"</span>: {
+    <span class="string">"strict"</span>: <span class="keyword">true</span>,
+    <span class="string">"noImplicitOverride"</span>: <span class="keyword">true</span>,
+    <span class="string">"exactOptionalPropertyTypes"</span>: <span class="keyword">true</span>,
+    <span class="string">"paths"</span>: {
+      <span class="string">"@core/*"</span>: [<span class="string">"src/app/core/*"</span>],
+      <span class="string">"@shared/*"</span>: [<span class="string">"src/app/shared/*"</span>]
+    }
+  }
+}</code></pre>
+
+<h4><span class="file-path">main.ts</span> & <span class="file-path">app.config.ts</span></h4>
+<p>
+    The bootstrap entry point and the centralized provider configuration. This replaces the legacy <code>AppModule</code>.
+</p>
+<pre><code><span class="comment">// app.config.ts</span>
+<span class="keyword">import</span> { ApplicationConfig } <span class="keyword">from</span> <span class="string">'@angular/core'</span>;
+<span class="keyword">import</span> { provideRouter, withComponentInputBinding, withPreloading, PreloadAllModules } <span class="keyword">from</span> <span class="string">'@angular/router'</span>;
+<span class="keyword">import</span> { provideHttpClient, withInterceptors } <span class="keyword">from</span> <span class="string">'@angular/common/http'</span>;
+<span class="keyword">import</span> { provideAnimationsAsync } <span class="keyword">from</span> <span class="string">'@angular/platform-browser/animations/async'</span>;
+<span class="keyword">import</span> { routes } <span class="keyword">from</span> <span class="string">'./app.routes'</span>;
+<span class="keyword">import</span> { authInterceptor } <span class="keyword">from</span> <span class="string">'@core/interceptors/auth.interceptor'</span>;
+<span class="keyword">import</span> { errorInterceptor } <span class="keyword">from</span> <span class="string">'@core/interceptors/error.interceptor'</span>;
+
+<span class="keyword">export const</span> appConfig: ApplicationConfig = {
   providers: [
-    provideZoneChangeDetection({ eventCoalescing: <span class="keyword">true</span> }),
-    provideRouter(routes, withComponentInputBinding()),
-    provideHttpClient()
+    provideRouter(routes, withComponentInputBinding(), withPreloading(PreloadAllModules)),
+    provideHttpClient(withInterceptors([authInterceptor, errorInterceptor])),
+    provideAnimationsAsync()
   ]
 };</code></pre>
-        </section>
 
-        <!-- Section 3 -->
-        <section id="toolkit" style="display:none;">
-          <h2>3. Essential Core Features (The 80/20 Toolkit)</h2>
-          
-          <h3>Strictly Typed Forms</h3>
-          <p>Reactive Forms manage form fields as immutable state streams. Leverage <span class="inline-code">NonNullableFormBuilder</span> to ensure inputs never default back to null properties:</p>
+<h3>Development Server Verification</h3>
+<p>
+    Run <code>ng serve</code>. The CLI uses Vite-based dev server (Angular 17+) with Hot Module Replacement (HMR). Verify:
+</p>
+<ul>
+    <li>Strict TypeScript compilation passes with zero implicit-any errors.</li>
+    <li>Source maps are enabled in <code>angular.json</code> dev target.</li>
+    <li>Proxy configuration (<code>proxy.conf.json</code>) is routing API calls correctly to avoid CORS during local development.</li>
+</ul>
 
-          <pre><code><span class="decorator">@Component</span>({
+<div class="exercise">
+    <h4>Exercise 2: Production Workspace Configuration</h4>
+    <p>Your team is adopting a monorepo pattern. The app must consume a local design system library <code>@corp/design-system</code>.</p>
+    <ul>
+        <li>Configure <span class="file-path">tsconfig.json</span> path mappings to resolve <code>@corp/design-system</code> to <code>libs/design-system/src/public-api.ts</code>.</li>
+        <li>Modify <span class="file-path">angular.json</span> to apply a global PostCSS/Tailwind configuration without ejecting the builder. Ensure <code>stylePreprocessorOptions</code> shares SCSS variables across the app.</li>
+        <li>Enforce production bundle budgets: initial chunk must warn at 400kb and error at 800kb. Any component chunk over 50kb should trigger a warning.</li>
+        <li>Write a custom <code>ng build</code> optimization: disable source maps and enable text compression (brotli) for the production target.</li>
+    </ul>
+    <p><strong>Deliverable:</strong> The exact <code>angular.json</code> and <code>tsconfig.json</code> snippets required to satisfy all constraints.</p>
+</div>
+
+<hr>
+
+<h2>3. Essential Core Features (The 80/20 Toolkit)</h2>
+
+<h3>3.1 Reactive Forms: Typed & Dynamic</h3>
+<p>
+    Angular Reactive Forms provide an imperative, observable model of the form state. Angular 14+ introduces strict typing. Angular 17+ defaults favor standalone components with <code>ReactiveFormsModule</code> imported directly.
+</p>
+
+<h4>Strictly Typed Form Model</h4>
+<pre><code><span class="keyword">import</span> { Component, inject } <span class="keyword">from</span> <span class="string">'@angular/core'</span>;
+<span class="keyword">import</span> { FormBuilder, FormGroup, FormControl, FormArray, Validators, ValidatorFn, ValidationErrors, AbstractControl } <span class="keyword">from</span> <span class="string">'@angular/forms'</span>;
+<span class="keyword">import</span> { takeUntilDestroyed } <span class="keyword">from</span> <span class="string">'@angular/core/rxjs-interop'</span>;
+
+<span class="keyword">interface</span> <span class="type">ProjectForm</span> {
+  name: FormControl&lt;<span class="type">string</span>&gt;;
+  ownerEmail: FormControl&lt;<span class="type">string</span>&gt;;
+  budget: FormControl&lt;<span class="type">number</span>&gt;;
+  tags: FormArray&lt;FormControl&lt;<span class="type">string</span>&gt;&gt;;
+}
+
+<span class="keyword">@Component</span>({
+  selector: <span class="string">'app-project-form'</span>,
   standalone: <span class="keyword">true</span>,
-  imports: [ReactiveFormsModule, CommonModule],
-  template: <span class="string">`
-    &lt;form [formGroup]="userForm" (ngSubmit)="submit()"&gt;
-      &lt;input formControlName="email" type="email" /&gt;
-      &lt;button type="submit" [disabled]="userForm.invalid"&gt;Submit&lt;/button&gt;
-    &lt;/form&gt;
-  `</span>
+  imports: [ReactiveFormsModule],
+  template: <span class="string">`...`</span>
 })
-<span class="keyword">export class</span> <span class="type">ProfileFormComponent</span> {
-  <span class="keyword">private</span> fb = inject(<span class="type">NonNullableFormBuilder</span>);
+<span class="keyword">export class</span> <span class="type">ProjectFormComponent</span> {
+  <span class="keyword">private readonly</span> fb = inject(FormBuilder);
 
-  userForm = this.fb.group({
-    email: [<span class="string">''</span>, [Validators.required, Validators.email]]
+  form = <span class="keyword">this</span>.fb.group&lt;ProjectForm&gt;({
+    name: <span class="keyword">this</span>.fb.control(<span class="string">''</span>, { nonNullable: <span class="keyword">true</span>, validators: Validators.required }),
+    ownerEmail: <span class="keyword">this</span>.fb.control(<span class="string">''</span>, {
+      nonNullable: <span class="keyword">true</span>,
+      validators: [Validators.required, Validators.email]
+    }),
+    budget: <span class="keyword">this</span>.fb.control(<span class="number">0</span>, { nonNullable: <span class="keyword">true</span>, validators: Validators.min(<span class="number">0</span>) }),
+    tags: <span class="keyword">this</span>.fb.array&lt;FormControl&lt;<span class="type">string</span>&gt;&gt;([])
   });
 
-  submit() {
-    <span class="keyword">if</span> (this.userForm.valid) {
-      console.log(this.userForm.getRawValue()); <span class="comment">// Outputs strongly typed object { email: string }</span>
-    }
+  <span class="keyword">constructor</span>() {
+    <span class="comment">// React to value changes with automatic cleanup</span>
+    <span class="keyword">this</span>.form.valueChanges.pipe(takeUntilDestroyed()).subscribe(<span class="function">v</span> => {
+      console.log(<span class="string">'Form dirty state:'</span>, <span class="keyword">this</span>.form.dirty, v);
+    });
+  }
+
+  addTag(value: <span class="type">string</span>): <span class="keyword">void</span> {
+    <span class="keyword">this</span>.form.controls.tags.push(<span class="keyword">this</span>.fb.control(value, { nonNullable: <span class="keyword">true</span> }));
   }
 }</code></pre>
 
-          <h3>Routing & Navigation</h3>
-          <p>Enable route bundles optimization via code-splitting lazy load targets:</p>
-          <pre><code><span class="keyword">export const</span> <span class="type">routes</span>: <span class="type">Routes</span> = [{
-  path: <span class="string">'dashboard'</span>,
-  loadComponent: () => <span class="keyword">import</span>(<span class="string">'./dashboard.component'</span>).then(c => c.DashboardComponent),
-  canActivate: [authGuard],
-  resolve: { serverData: statsResolver }
-}];</code></pre>
+<h4>Cross-Field & Async Validators</h4>
+<pre><code><span class="comment">// Generic cross-field validator</span>
+<span class="keyword">export const</span> dateRangeValidator: ValidatorFn = (control: AbstractControl): ValidationErrors | <span class="keyword">null</span> => {
+  <span class="keyword">const</span> start = control.get(<span class="string">'startDate'</span>)?.value;
+  <span class="keyword">const</span> end = control.get(<span class="string">'endDate'</span>)?.value;
+  <span class="keyword">return</span> start && end && <span class="keyword">new</span> <span class="type">Date</span>(start) > <span class="keyword">new</span> <span class="type">Date</span>(end) ? { dateRange: <span class="keyword">true</span> } : <span class="keyword">null</span>;
+};
 
-          <h3>HTTP Client & Global Interceptors</h3>
-          <p>Functional HTTP interceptors sit in the request pipeline to append headers (JWT tokens) or globally capture API failure statuses:</p>
-
-          <div class="sandbox" style="max-width: 500px; margin: 2rem auto;">
-            <div class="sandbox-header">
-              <div class="sandbox-title">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
-                Form Validation & Interceptor Sandbox
-              </div>
-              <span class="badge badge-secondary">Dynamic Simulation</span>
-            </div>
-
-            <div class="form-group">
-              <label>Domain Target</label>
-              <input type="text" id="input-domain" value="api.enterprise.com" />
-              <div class="error-msg" id="err-domain" style="display:none">Domain name field is required.</div>
-            </div>
-
-            <div class="form-group">
-              <label>Port Configuration (Input '401' to trigger global error interceptor redirect)</label>
-              <input type="number" id="input-port" value="8080" />
-              <div class="pending-msg" id="pnd-port" style="display:none">Verifying port allocation...</div>
-              <div class="error-msg" id="err-port" style="display:none">Port must range between 1024 and 65535.</div>
-              <div class="error-msg" id="err-port-taken" style="display:none">Port is already mapped by local listener.</div>
-            </div>
-
-            <div class="actions-row">
-              <button class="btn" style="width: 100%" id="btn-save-form">Submit & POST Configuration</button>
-            </div>
-
-            <div class="console" id="console-form">
-              [Validator Console] Inputs verified.
-            </div>
-          </div>
-        </section>
-
-        <!-- Section 4 -->
-        <section id="exercises" style="display:none;">
-          <h2>4. Fixation Solutions</h2>
-          
-          <h3>Exercise 1 Solution: SignalStore Implementation</h3>
-          <pre><code><span class="keyword">import</span> { computed, signal, Signal, WritableSignal } from <span class="string">'@angular/core'</span>;
-
-<span class="keyword">export class</span> <span class="type">SignalStore</span>&lt;T <span class="keyword">extends</span> <span class="type">object</span>&gt; {
-  <span class="keyword">private readonly</span> _state: <span class="type">WritableSignal</span>&lt;T&gt;;
-  <span class="keyword">readonly</span> state: <span class="type">Signal</span>&lt;T&gt;;
-
-  <span class="keyword">constructor</span>(<span class="params">initialState: T</span>) {
-    this._state = signal&lt;T&gt;(initialState);
-    this.state = this._state.asReadonly();
-  }
-
-  select&lt;K&gt;(<span class="params">selector: (state: T) => K</span>): <span class="type">Signal</span>&lt;K&gt; {
-    <span class="keyword">return</span> computed(() => selector(this._state()));
-  }
-
-  update(<span class="params">reducer: (state: T) => Partial<T></span>): <span class="type">void</span> {
-    this._state.update(current => ({
-      ...current,
-      ...reducer(current)
-    }));
-  }
+<span class="comment">// Async validator factory</span>
+<span class="keyword">export function</span> <span class="function">uniqueEmailValidator</span>(userService: UserService): AsyncValidatorFn {
+  <span class="keyword">return</span> (control: AbstractControl) => {
+    <span class="keyword">if</span> (!control.value) <span class="keyword">return</span> of(<span class="keyword">null</span>);
+    <span class="keyword">return</span> userService.checkEmail(control.value).pipe(
+      map(<span class="function">isTaken</span> => (isTaken ? { uniqueEmail: <span class="keyword">true</span> } : <span class="keyword">null</span>)),
+      catchError(<span class="function">() =></span> of(<span class="keyword">null</span>))
+    );
+  };
 }</code></pre>
 
-          <h3>Exercise 2 Solution: Config Path Aliases</h3>
-          <pre><code><span class="comment">// tsconfig.json</span>
-{
-  <span class="keyword">"compilerOptions"</span>: {
-    <span class="keyword">"baseUrl"</span>: <span class="keyword">"./"</span>,
-    <span class="keyword">"paths"</span>: {
-      <span class="keyword">"@core/*"</span>: [<span class="keyword">"src/app/core/*"</span>],
-      <span class="keyword">"@shared/*"</span>: [<span class="keyword">"src/app/shared/*"</span>],
-      <span class="keyword">"@env/*"</span>: [<span class="keyword">"src/environments/*"</span>]
-    }
-  }
-}</code></pre>
+<div class="exercise">
+    <h4>Exercise 3: Dynamic Schema-Driven Form Engine</h4>
+    <p>Build a <code>DynamicFormComponent</code> that accepts a runtime JSON schema defining fields, their types, validators, and conditional visibility rules.</p>
+    <ul>
+        <li>Implement a generic <code>FormBuilderService</code> that translates a schema into a strictly typed <code>FormGroup</code>. The schema type must be inferred from the JSON structure.</li>
+        <li>Field B is visible only if Field A equals a specific value (e.g., <code>country === 'USA'</code> shows <code>state</code>). Visibility changes must dynamically add/remove controls from the <code>FormGroup</code>, not just hide them in the DOM.</li>
+        <li>Implement an async validator for the <code>state</code> field that queries a REST API to verify the state code exists. Use <code>takeUntilDestroyed</code> to prevent memory leaks.</li>
+        <li>The component must expose an <code>Output</code> emitting a strongly typed value object matching the schema, not <code>any</code>.</li>
+    </ul>
+    <p><strong>Deliverable:</strong> The <code>FormBuilderService</code>, the <code>DynamicFormComponent</code>, and a sample JSON schema that exercises all requirements.</p>
+</div>
 
-          <h3>Exercise 3 Solution: Global HTTP Error Interceptor</h3>
-          <pre><code><span class="keyword">export const</span> errorInterceptor: <span class="type">HttpInterceptorFn</span> = (req, next) => {
-  <span class="keyword">const</span> router = inject(<span class="type">Router</span>);
-  <span class="keyword">const</span> alert = inject(<span class="type">AlertService</span>);
+<hr>
 
-  <span class="keyword">return</span> next(req).pipe(
-    catchError((error: <span class="type">HttpErrorResponse</span>) => {
-      <span class="keyword">if</span> (error.status === <span class="keyword">401</span>) {
-        alert.show(<span class="string">'Authentication required.'</span>);
-        router.navigate([<span class="string">'/login'</span>]);
+<h3>3.2 Routing & Navigation</h3>
+<p>
+    Modern Angular routing is flat, lazy, and function-driven. <code>loadComponent</code> replaces legacy module-based lazy loading.
+</p>
+
+<h4>Lazy Loading & Route Configuration</h4>
+<pre><code><span class="comment">// app.routes.ts</span>
+<span class="keyword">import</span> { Routes } <span class="keyword">from</span> <span class="string">'@angular/router'</span>;
+
+<span class="keyword">export const</span> routes: Routes = [
+  {
+    path: <span class="string">''</span>,
+    pathMatch: <span class="string">'full'</span>,
+    redirectTo: <span class="string">'dashboard'</span>
+  },
+  {
+    path: <span class="string">'dashboard'</span>,
+    loadComponent: <span class="function">() =></span> import(<span class="string">'./features/dashboard/dashboard.component'</span>).then(<span class="function">m</span> => m.DashboardComponent)
+  },
+  {
+    path: <span class="string">'admin'</span>,
+    loadComponent: <span class="function">() =></span> import(<span class="string">'./features/admin/admin.component'</span>).then(<span class="function">m</span> => m.AdminComponent),
+    canActivate: [authGuard],
+    canDeactivate: [unsavedChangesGuard],
+    resolve: { permissions: adminPermissionsResolver },
+    data: { breadcrumb: <span class="string">'Administration'</span>, roles: [<span class="string">'admin'</span>] },
+    children: [
+      {
+        path: <span class="string">'users'</span>,
+        loadComponent: <span class="function">() =></span> import(<span class="string">'./features/admin/users.component'</span>).then(<span class="function">m</span> => m.UsersComponent)
       }
-      <span class="keyword">return</span> throwError(() => error);
+    ]
+  },
+  { path: <span class="string">'**'</span>, loadComponent: <span class="function">() =></span> import(<span class="string">'./shell/not-found.component'</span>).then(<span class="function">m</span> => m.NotFoundComponent) }
+];</code></pre>
+
+<h4>Functional Guards & Resolvers</h4>
+<p>
+    Class-based guards are deprecated. Use functional guards with <code>inject()</code> for full access to DI.
+</p>
+<pre><code><span class="keyword">import</span> { CanActivateFn, CanDeactivateFn, ResolveFn, Router } <span class="keyword">from</span> <span class="string">'@angular/router'</span>;
+<span class="keyword">import</span> { inject } <span class="keyword">from</span> <span class="string">'@angular/core'</span>;
+
+<span class="keyword">export const</span> authGuard: CanActivateFn = (route, state) => {
+  <span class="keyword">const</span> store = inject(AuthStore);
+  <span class="keyword">const</span> router = inject(Router);
+  <span class="keyword">return</span> store.isAuthenticated() ? <span class="keyword">true</span> : router.parseUrl(<span class="string">'/login'</span>);
+};
+
+<span class="keyword">export const</span> unsavedChangesGuard: CanDeactivateFn&lt;EditorComponent&gt; = (component) => {
+  <span class="keyword">return</span> component.isDirty() ? confirm(<span class="string">'Discard changes?'</span>) : <span class="keyword">true</span>;
+};
+
+<span class="keyword">export const</span> adminPermissionsResolver: ResolveFn&lt;Permission[]&gt; = () => {
+  <span class="keyword">return</span> inject(PermissionService).fetchForModule(<span class="string">'admin'</span>);
+};</code></pre>
+
+<h4>Route Signals & Component Input Binding</h4>
+<p>
+    With <code>withComponentInputBinding()</code>, route parameters are automatically bound to component inputs as signals.
+</p>
+<pre><code><span class="keyword">@Component</span>({...})
+<span class="keyword">export class</span> <span class="type">UserDetailComponent</span> {
+  <span class="comment">// Automatically populated from :id route param</span>
+  userId = input.required&lt;<span class="type">string</span>&gt;();
+
+  <span class="keyword">private readonly</span> userService = inject(UserService);
+  <span class="keyword">readonly</span> user = toSignal(
+    toObservable(<span class="keyword">this</span>.userId).pipe(
+      switchMap(<span class="function">id =></span> <span class="keyword">this</span>.userService.getById(id))
+    ),
+    { initialValue: <span class="keyword">null</span> }
+  );
+}</code></pre>
+
+<div class="exercise">
+    <h4>Exercise 4: Permission-Based Route Fabric</h4>
+    <p>Implement a runtime route filtering system for a SaaS admin panel.</p>
+    <ul>
+        <li>Create a <code>PermissionGuard</code> that reads the current user's role set from a signal-based <code>AuthStore</code>. If the route's <code>data['roles']</code> array intersects with the user's roles, allow activation; otherwise redirect to <code>/unauthorized</code>.</li>
+        <li>Build a <code>RouteConfigService</code> that dynamically filters the <code>Routes</code> array at runtime based on permissions <em>before</em> providing them to the router. Routes the user cannot access should not appear in navigation menus.</li>
+        <li>Implement a <code>breadcrumbResolver</code> that constructs a breadcrumb trail from route <code>data</code> and supports i18n translation keys. The breadcrumb must update reactively on route changes.</li>
+        <li>Lazy-load the admin dashboard with a custom preloading strategy: preload only when the user hovers over the admin navigation link for more than 500ms.</li>
+    </ul>
+    <p><strong>Deliverable:</strong> The guard, the route filtering service, the breadcrumb implementation, and the custom preloading strategy class.</p>
+</div>
+
+<hr>
+
+<h3>3.3 HTTP Client & API Integration</h3>
+<p>
+    Angular 17+ uses the functional interceptor API and <code>provideHttpClient</code>. RxJS remains the backbone, but signals are the preferred consumption layer in components.
+</p>
+
+<h4>Functional Interceptors</h4>
+<pre><code><span class="keyword">import</span> { HttpInterceptorFn, HttpRequest, HttpHandlerFn } <span class="keyword">from</span> <span class="string">'@angular/common/http'</span>;
+<span class="keyword">import</span> { inject } <span class="keyword">from</span> <span class="string">'@angular/core'</span>;
+<span class="keyword">import</span> { catchError, throwError } <span class="keyword">from</span> <span class="string">'rxjs'</span>;
+
+<span class="keyword">export const</span> authInterceptor: HttpInterceptorFn = (req: HttpRequest&lt;<span class="keyword">unknown</span>&gt;, next: HttpHandlerFn) => {
+  <span class="keyword">const</span> token = inject(AuthStore).token();
+  <span class="keyword">if</span> (!token) <span class="keyword">return</span> next(req);
+
+  <span class="keyword">const</span> authReq = req.clone({
+    setHeaders: { Authorization: <span class="string">`Bearer </span>${token}<span class="string">`</span> }
+  });
+  <span class="keyword">return</span> next(authReq);
+};
+
+<span class="keyword">export const</span> errorInterceptor: HttpInterceptorFn = (req, next) => {
+  <span class="keyword">const</span> notifier = inject(NotificationService);
+  <span class="keyword">return</span> next(req).pipe(
+    catchError(<span class="function">err =></span> {
+      <span class="keyword">if</span> (err.status === <span class="number">401</span>) inject(AuthStore).logout();
+      <span class="keyword">else</span> notifier.showError(err.error?.message || <span class="string">'Request failed'</span>);
+      <span class="keyword">return</span> throwError(<span class="function">() =></span> err);
     })
   );
 };</code></pre>
-        </section>
 
-      </article>
-    </main>
-  </div>
+<h4>Bridging RxJS & Signals</h4>
+<pre><code><span class="keyword">import</span> { toSignal } <span class="keyword">from</span> <span class="string">'@angular/core/rxjs-interop'</span>;
+<span class="keyword">import</span> { HttpClient, HttpContext } <span class="keyword">from</span> <span class="string">'@angular/common/http'</span>;
+<span class="keyword">import</span> { shareReplay, switchMap } <span class="keyword">from</span> <span class="string">'rxjs'</span>;
 
-  <!-- Auth Toast Notifications -->
-  <div class="toast" id="toast">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-    <span>[401 Intercepted] HTTP Error 401: Unauthorized API attempt. Redirecting component view.</span>
-  </div>
+<span class="keyword">const</span> SKIP_INTERCEPTOR = <span class="keyword">new</span> HttpContext().set(<span class="keyword">new</span> HttpContextToken&lt;<span class="type">boolean</span>&gt;(<span class="function">() =></span> <span class="keyword">false</span>), <span class="keyword">true</span>);
 
-  <script>
-    // Tab switching Router mock
-    const navItems = document.querySelectorAll('.nav-item');
-    const sections = document.querySelectorAll('main section');
+<span class="keyword">@Injectable</span>({ providedIn: <span class="string">'root'</span> })
+<span class="keyword">export class</span> <span class="type">UserApiService</span> {
+  <span class="keyword">private readonly</span> http = inject(HttpClient);
 
-    navItems.forEach(item => {
-      item.addEventListener('click', (e) => {
-        e.preventDefault();
-        navItems.forEach(i => i.classList.remove('active'));
-        sections.forEach(s => s.style.display = 'none');
-        
-        item.classList.add('active');
-        const href = item.querySelector('a').getAttribute('href');
-        const targetSection = document.querySelector(href);
-        if (targetSection) {
-          targetSection.style.display = 'block';
-        }
-      });
-    });
+  <span class="keyword">private readonly</span> refresh$ = <span class="keyword">new</span> Subject&lt;<span class="keyword">void</span>&gt;();
 
-    // Handle initial hash check
-    if (window.location.hash) {
-      const activeNav = document.querySelector(`.nav-item a[href="${window.location.hash}"]`);
-      if (activeNav) activeNav.parentElement.click();
-    }
+  <span class="comment">// Signal derived from RxJS stream with shareReplay for multicast</span>
+  <span class="keyword">readonly</span> users = toSignal(
+    <span class="keyword">this</span>.refresh$.pipe(
+      startWith(<span class="keyword">null</span>),
+      switchMap(<span class="function">() =></span> <span class="keyword">this</span>.http.get&lt;User[]&gt;(<span class="string">'/api/users'</span>)),
+      shareReplay({ bufferSize: <span class="number">1</span>, refCount: <span class="keyword">true</span> })
+    ),
+    { initialValue: [] <span class="keyword">as</span> User[] }
+  );
 
-    // 1. Reactive Signal Core Simulator
-    let activeEffect = null;
+  invalidateCache(): <span class="keyword">void</span> {
+    <span class="keyword">this</span>.refresh$.next();
+  }
+}</code></pre>
 
-    class SimSignal {
-      constructor(v) {
-        this.valueStore = v;
-        this.subscribers = new Set();
-      }
-      get val() {
-        if (activeEffect) {
-          this.subscribers.add(activeEffect);
-        }
-        return this.valueStore;
-      }
-      set val(n) {
-        if (this.valueStore !== n) {
-          this.valueStore = n;
-          this.subscribers.forEach(effectFn => effectFn());
-        }
-      }
-      update(fn) {
-        this.val = fn(this.valueStore);
-      }
-    }
+<h4>Context-Aware Requests</h4>
+<p>
+    Use <code>HttpContext</code> to pass metadata to interceptors per-request without abusing headers.
+</p>
+<pre><code><span class="keyword">this</span>.http.get(<span class="string">'/api/public'</span>, {
+  context: <span class="keyword">new</span> HttpContext().set(SKIP_AUTH, <span class="keyword">true</span>)
+})</code></pre>
 
-    function signal(v) { return new SimSignal(v); }
-    
-    function computed(fn) {
-      const s = signal();
-      const runComputed = () => {
-        activeEffect = runComputed;
-        s.val = fn();
-        activeEffect = null;
-      };
-      runComputed();
-      return s;
-    }
+<div class="exercise">
+    <h4>Exercise 5: Signal-Based API Resource with Interceptor Mesh</h4>
+    <p>Build a generic, reusable data access layer for CRUD operations.</p>
+    <ul>
+        <li>Create a generic <code>ApiResource&lt;T&gt;</code> class (not a service) that wraps <code>HttpClient</code> using signals. It must expose:
+            <ul>
+                <li><code>data: Signal&lt;T[]&gt;</code></li>
+                <li><code>loading: Signal&lt;boolean&gt;</code></li>
+                <li><code>error: Signal&lt;HttpErrorResponse | null&gt;</code></li>
+                <li><code>refresh(): void</code> to re-trigger the fetch</li>
+            </ul>
+        </li>
+        <li>Implement automatic refresh: the resource should re-fetch every <code>N</code> seconds (configurable) but only when the browser tab is visible (use <code>document.visibilitychange</code>).</li>
+        <li>Implement request deduplication: if <code>refresh()</code> is called while a request is in-flight, do not spawn a second request.</li>
+        <li>Build a <code>cacheInterceptor</code> using a <code>Map&lt;string, WritableSignal&lt;any&gt;&gt;</code>. It should cache GET responses and invalidate entries based on a TTL (passed via <code>HttpContext</code>). The interceptor must be stateful and shared across the app.</li>
+        <li>Integrate optimistic updates: expose an <code>optimisticUpdate(updater: (current: T[]) => T[]): void</code> method that mutates the local signal immediately, then reconciles with the server response.</li>
+    </ul>
+    <p><strong>Deliverable:</strong> The <code>ApiResource&lt;T&gt;</code> implementation, the <code>cacheInterceptor</code>, and a usage example fetching a paginated list of invoices.</p>
+</div>
 
-    function effect(fn) {
-      const runEffect = () => {
-        activeEffect = runEffect;
-        fn();
-        activeEffect = null;
-      };
-      runEffect();
-    }
+<hr>
 
-    // Connect simulator to DOM
-    const countSig = signal(0);
-    const doubleComp = computed(() => countSig.val * 2);
+<h2>Quick Reference: Modern Syntax Cheat Sheet</h2>
+<table style="width:100%; border-collapse: collapse; margin: 1rem 0;">
+    <tr style="border-bottom: 1px solid var(--border);">
+        <th style="text-align:left; padding: 0.5rem;">Task</th>
+        <th style="text-align:left; padding: 0.5rem;">Modern Angular (17+)</th>
+    </tr>
+    <tr>
+        <td style="padding: 0.5rem;">Bootstrap</td>
+        <td style="padding: 0.5rem;"><code>bootstrapApplication(AppComponent, appConfig)</code></td>
+    </tr>
+    <tr>
+        <td style="padding: 0.5rem;">DI</td>
+        <td style="padding: 0.5rem;"><code>inject(MyService)</code> in constructors, lifecycle hooks, or functions</td>
+    </tr>
+    <tr>
+        <td style="padding: 0.5rem;">Component</td>
+        <td style="padding: 0.5rem;"><code>standalone: true</code> with <code>imports: [...]</code></td>
+    </tr>
+    <tr>
+        <td style="padding: 0.5rem;">Template Flow</td>
+        <td style="padding: 0.5rem;"><code>@if</code>, <code>@for</code>, <code>@switch</code> (not <code>*ngIf</code>)</td>
+    </tr>
+    <tr>
+        <td style="padding: 0.5rem;">Reactivity</td>
+        <td style="padding: 0.5rem;"><code>signal()</code>, <code>computed()</code>, <code>effect()</code> + <code>OnPush</code></td>
+    </tr>
+    <tr>
+        <td style="padding: 0.5rem;">Routing</td>
+        <td style="padding: 0.5rem;"><code>loadComponent</code> + functional guards</td>
+    </tr>
+    <tr>
+        <td style="padding: 0.5rem;">HTTP</td>
+        <td style="padding: 0.5rem;"><code>provideHttpClient(withInterceptors([...]))</code></td>
+    </tr>
+    <tr>
+        <td style="padding: 0.5rem;">RxJS → Signals</td>
+        <td style="padding: 0.5rem;"><code>toSignal(obs$, { initialValue })</code></td>
+    </tr>
+    <tr>
+        <td style="padding: 0.5rem;">Cleanup</td>
+        <td style="padding: 0.5rem;"><code>takeUntilDestroyed()</code> from <code>@angular/core/rxjs-interop</code></td>
+    </tr>
+</table>
 
-    const elCountNode = document.getElementById('node-count');
-    const elDoubleNode = document.getElementById('node-double');
-    const elEffectNode = document.getElementById('node-effect');
+<hr>
 
-    const elCountVal = document.getElementById('val-count');
-    const elDoubleVal = document.getElementById('val-double');
-    const elEffectVal = document.getElementById('val-effect');
-    const consoleSignals = document.getElementById('console-signals');
+<p style="color: var(--muted); font-size: 0.9rem; margin-top: 3rem;">
+    <strong>End of Tutorial.</strong> This document prioritizes architectural patterns over API trivia. 
+    Consult the <a href="https://angular.dev" style="color: var(--accent);">angular.dev</a> reference for exhaustive API surface details.
+</p>
 
-    function animateTrigger(el, className) {
-      el.classList.add(className);
-      setTimeout(() => el.classList.remove(className), 300);
-    }
-
-    effect(() => {
-      const current = countSig.val;
-      const computedVal = doubleComp.val;
-
-      elCountVal.innerText = current;
-      elDoubleVal.innerText = computedVal;
-      elEffectVal.innerText = `Modified (${current})`;
-
-      animateTrigger(elCountNode, 'active-sig');
-      setTimeout(() => animateTrigger(elDoubleNode, 'active-computed'), 100);
-      setTimeout(() => animateTrigger(elEffectNode, 'active-effect'), 200);
-
-      const logMsg = `[Reactivity] count is updated to ${current} -> computed re-evaluates doubleCount to ${computedVal} -> effect triggers template render`;
-      consoleSignals.innerHTML = logMsg + '<br>' + consoleSignals.innerHTML;
-    });
-
-    document.getElementById('btn-increment').addEventListener('click', () => {
-      countSig.update(v => v + 1);
-    });
-
-    document.getElementById('btn-reset').addEventListener('click', () => {
-      countSig.val = 0;
-      consoleSignals.innerHTML = "[Reactivity] Graph values reset to 0.";
-    });
-
-    // 2. HTTP Interceptor / Form Validation Simulation
-    const inputDomain = document.getElementById('input-domain');
-    const inputPort = document.getElementById('input-port');
-    const errDomain = document.getElementById('err-domain');
-    const errPort = document.getElementById('err-port');
-    const errPortTaken = document.getElementById('err-port-taken');
-    const pndPort = document.getElementById('pnd-port');
-    const consoleForm = document.getElementById('console-form');
-    const btnSaveForm = document.getElementById('btn-save-form');
-    const toast = document.getElementById('toast');
-
-    let validationTimer = null;
-
-    inputPort.addEventListener('input', () => {
-      pndPort.style.display = 'block';
-      errPort.style.display = 'none';
-      errPortTaken.style.display = 'none';
-
-      clearTimeout(validationTimer);
-      validationTimer = setTimeout(() => {
-        pndPort.style.display = 'none';
-        const port = parseInt(inputPort.value);
-
-        if (isNaN(port) || port < 1024 || port > 65535) {
-          errPort.style.display = 'block';
-          consoleForm.innerText = `[Form Valid State] INVALID: Value ${inputPort.value} exceeds validation range.`;
-          return;
-        }
-
-        // Mock taken ports checks
-        if (port === 1433 || port === 3306 || port === 5432 || port === 80 || port === 443) {
-          errPortTaken.style.display = 'block';
-          consoleForm.innerText = `[Form Valid State] INVALID: Port ${port} taken by default system database listener.`;
-          return;
-        }
-
-        consoleForm.innerText = `[Form Valid State] VALID: Async check confirms port ${port} is available.`;
-      }, 500);
-    });
-
-    btnSaveForm.addEventListener('click', () => {
-      const port = parseInt(inputPort.value);
-
-      if (inputDomain.value.trim() === '') {
-        errDomain.style.display = 'block';
-        return;
-      } else {
-        errDomain.style.display = 'none';
-      }
-
-      if (port === 401) {
-        consoleForm.innerHTML = `<span style="color:#ef4444">[HTTP Fail] POST status code 401 back from validator route.</span>`;
-        toast.classList.add('show');
-        setTimeout(() => {
-          toast.classList.remove('show');
-          // Navigate back to architecture tab
-          document.querySelector('.nav-item').click();
-          consoleSignals.innerHTML = `[Interceptor] Forced redirect due to authentication failure.<br>` + consoleSignals.innerHTML;
-        }, 3000);
-        return;
-      }
-
-      consoleForm.innerHTML = `<span style="color:#10b981">[HTTP Success] Configuration applied. API address endpoint: http://${inputDomain.value}:${port}</span>`;
-    });
-  </script>
 </body>
 </html>
