@@ -123,9 +123,9 @@
 
 <h1>Angular 17+ Senior Engineer Fast-Track</h1>
 <p>
-    A zero-fluff, architecture-first guide for senior engineers transitioning into Angular from React, Vue, or other modern ecosystems. 
-    We assume mastery of TypeScript, component-based design, and reactive programming. 
-    <strong>Goal:</strong> Reach 80% daily productivity by internalizing the 20% of Angular that matters in modern enterprise codebases.
+    A zero-fluff, architecture-first guide for senior engineers transitioning into Angular from backend ecosystems like Java, C#, or Go. 
+    We assume mastery of Object-Oriented Programming, Dependency Injection, and architectural design patterns, with basic knowledge of TypeScript. 
+    <strong>Goal:</strong> Reach 80% daily productivity by mapping your backend mental models to Angular's enterprise-grade frontend architecture.
 </p>
 
 <hr>
@@ -148,28 +148,28 @@
 <table style="width:100%; border-collapse: collapse; margin: 1rem 0;">
     <tr style="border-bottom: 1px solid var(--border);">
         <th style="text-align:left; padding: 0.5rem;">Concept</th>
-        <th style="text-align:left; padding: 0.5rem;">React / Vue Mental Model</th>
+        <th style="text-align:left; padding: 0.5rem;">Java / Backend Mental Model</th>
         <th style="text-align:left; padding: 0.5rem;">Angular Mental Model</th>
     </tr>
     <tr>
-        <td style="padding: 0.5rem;">Reactivity</td>
-        <td style="padding: 0.5rem;">Hooks / Proxies drive UI updates</td>
-        <td style="padding: 0.5rem;">Explicit signal graph <em>or</em> implicit Zone.js patches trigger Change Detection</td>
+        <td style="padding: 0.5rem;">Architecture</td>
+        <td style="padding: 0.5rem;">MVC (Spring Boot), Request/Response</td>
+        <td style="padding: 0.5rem;">Component Tree + Services, Client-side routing, Long-lived SPA state</td>
     </tr>
     <tr>
-        <td style="padding: 0.5rem;">State ↔ UI</td>
-        <td style="padding: 0.5rem;">UI = f(state)</td>
-        <td style="padding: 0.5rem;">UI = f(signals) + DI tree provides state services</td>
+        <td style="padding: 0.5rem;">Dependency Injection</td>
+        <td style="padding: 0.5rem;">Global Application Context (Singletons, Request Scopes)</td>
+        <td style="padding: 0.5rem;">Hierarchical Injector Tree tied to the UI Component Tree</td>
     </tr>
     <tr>
-        <td style="padding: 0.5rem;">Composition</td>
-        <td style="padding: 0.5rem;">Component props / slots</td>
-        <td style="padding: 0.5rem;">Component inputs + DI provider overrides + template composition</td>
+        <td style="padding: 0.5rem;">State & Data Flow</td>
+        <td style="padding: 0.5rem;">Database transactions, Thread-local state, DTOs</td>
+        <td style="padding: 0.5rem;">Reactive streams (RxJS) and Signals (Push-based reactivity)</td>
     </tr>
     <tr>
-        <td style="padding: 0.5rem;">Side Effects</td>
-        <td style="padding: 0.5rem;">useEffect / watchers</td>
-        <td style="padding: 0.5rem;"><code>effect()</code> (signals) or lifecycle hooks (imperative escape hatches)</td>
+        <td style="padding: 0.5rem;">Views & Templates</td>
+        <td style="padding: 0.5rem;">Server-rendered templates (JSP, Thymeleaf)</td>
+        <td style="padding: 0.5rem;">Compiled components with reactive bindings and control flow</td>
     </tr>
 </table>
 
@@ -231,7 +231,7 @@ bootstrapApplication(AppComponent, appConfig).catch(<span class="function">err</
 
 <h3>Dependency Injection (DI) Deep Dive</h3>
 <p>
-    Angular's DI is a <strong>hierarchical tree of injectors</strong>, not a flat service locator.
+    If you know Spring or Guice, you know DI. However, Angular's DI is a <strong>hierarchical tree of injectors</strong> tied to the UI, not just a flat application context.
 </p>
 <ul>
     <li><strong>Root Injector:</strong> Created at bootstrap. <code>providedIn: 'root'</code> registers here.</li>
